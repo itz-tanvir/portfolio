@@ -1,0 +1,209 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   index.css  |  GLOBAL STYLES
+   ─────────────────────────────────────────────────────────────────────────────
+   Layer order (top → bottom of this file):
+     1. Tailwind directives     — injects base reset, component utilities, helpers
+     2. CSS custom properties   — design tokens (:root light + html.dark overrides)
+     3. Base element styles     — html, body, font, background, transitions
+     4. Dark mode overrides     — force correct text colours under html.dark
+     5. Scrollbar styling       — custom thin orange scrollbar track
+     6. Selection highlight     — accent colour when user selects text
+     7. Noise texture overlay   — subtle film grain on body::before
+     8. Section utility classes — .section-padding, .section-title, .section-subtitle
+     9. Card component          — .card base styles + hover lift + dark variant
+    10. Accent line decoration  — .accent-line (short orange bar at section tops)
+    11. Skill badge classes     — .badge-advanced / .badge-proficient / .badge-intermediate
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── 1. Tailwind directives ──────────────────────────────────────────────────
+   PostCSS replaces these three @tailwind at-rules with actual CSS:
+   - base:       Tailwind's opinionated browser reset (preflight)
+   - components: any @layer components {} blocks in this or other CSS files
+   - utilities:  all the utility classes (flex, text-lg, px-4, etc.)            */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── 2. CSS custom properties (design tokens) ────────────────────────────────
+   Defining colours as CSS variables means every component just uses var(--ink)
+   etc. — to switch the entire theme, we only change values here, not in JSX.   */
+:root {
+  --cream:  #F5F0E8; /* main page background — warm off-white, easier on eyes than pure white */
+  --ink:    #1A1A1A; /* primary text and icon colour — near-black, not harsh pure black        */
+  --accent: #D4622A; /* orange brand colour — CTAs, active nav links, badges, dots            */
+  --muted:  #6B6B6B; /* secondary text — timestamps, labels, captions; readable but recedes   */
+  --card:   #FDFAF5; /* card background — slightly warmer/lighter than --cream for contrast   */
+}
+
+/* Dark mode token overrides — applied when App.jsx adds class="dark" to <html>
+   These values flip the palette to a dark theme without changing any component code */
+html.dark {
+  --cream:  #111111; /* dark background — deep near-black                             */
+  --ink:    #F2F2F2; /* light text — near-white so it's readable on dark background   */
+  --accent: #E8774A; /* slightly lighter orange — pops better against dark backgrounds */
+  --muted:  #BBBBBB; /* lighter grey — muted but still readable on dark bg            */
+  --card:   #1E1E1E; /* card background — slightly lighter than --cream for contrast  */
+}
+
+/* ── 3. Base element styles ──────────────────────────────────────────────────  */
+
+html {
+  scroll-behavior: smooth;                /* enable CSS smooth scrolling for anchor links (supplements JS scrollIntoView) */
+  background-color: var(--cream);         /* prevents white flash on initial load before body renders  */
+  transition: background-color 0.3s ease; /* smooth background colour transition when dark mode toggles */
+}
+
+body {
+  font-family: 'Syne', sans-serif;        /* Syne: modern geometric sans-serif loaded via Google Fonts in index.html */
+  background-color: var(--cream);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;    /* improves text rendering on macOS/iOS by using subpixel AA */
+  transition: background-color 0.3s ease, color 0.3s ease; /* smooth colour transitions on dark/light mode toggle */
+}
+
+/* ── 4. Dark mode text colour enforcement ────────────────────────────────────
+   Tailwind utility classes take precedence by specificity in some cases, but
+   inline styles do not get dark-mode CSS var values automatically.
+   This block forces the CSS variable values onto common text elements so they
+   pick up dark-mode colours even when Tailwind classes are involved.            */
+html.dark body,
+html.dark p,
+html.dark span:not(.text-accent), /* exclude .text-accent spans — they should keep their explicit colour */
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark li,
+html.dark label {
+  color: var(--ink); /* var(--ink) resolves to #F2F2F2 in dark mode */
+}
+
+/* Force correct opacity-modified ink colours in dark mode
+   Tailwind generates classes like text-ink/60 → rgba(26,26,26,0.6) which
+   looks invisible on dark bg — override with the dark-mode ink colour       */
+html.dark .text-ink\/60,
+html.dark .text-ink\/70 {
+  color: rgba(242,242,242,0.7) !important; /* 70% white — readable muted text on dark bg */
+}
+
+html.dark .text-muted { color: var(--muted) !important; } /* ensure --muted (#BBBBBB) is used in dark mode */
+html.dark .text-ink   { color: var(--ink)   !important; } /* ensure --ink   (#F2F2F2) is used in dark mode */
+
+/* ── 5. Custom scrollbar ─────────────────────────────────────────────────────
+   ::-webkit-scrollbar applies to Chrome, Edge, Safari (not Firefox).
+   A slim 6px track with an orange thumb ties the scrollbar to the brand colour. */
+::-webkit-scrollbar       { width: 6px; }                            /* thin scrollbar — less intrusive than default */
+::-webkit-scrollbar-track { background: var(--cream); }              /* track background matches page background      */
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; } /* orange thumb — brand accent colour   */
+
+/* ── 6. Text selection highlight ─────────────────────────────────────────────
+   When the user selects text on the page, the highlight uses the accent colour
+   instead of the browser default blue — a subtle branded touch.                */
+::selection {
+  background: var(--accent); /* orange selection highlight */
+  color: white;              /* white text on orange background — ensures readability */
+}
+
+/* ── 7. Noise texture overlay ────────────────────────────────────────────────
+   A very subtle film-grain texture layered on top of every page.
+   body::before creates a pseudo-element that covers the full viewport.
+   The SVG data URI generates fractal noise via an feeTurbulence filter.
+   pointer-events:none ensures it doesn't block any clicks.
+   z-index:9999 places it above all content (purely visual, no interaction).     */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0; /* cover full screen — same as top:0 right:0 bottom:0 left:0 */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; /* completely click-through — must not block any interaction */
+  z-index: 9999;        /* above all page content — overlay only, never blocks content because pointer-events:none */
+  opacity: 0.4;         /* very faint — adds texture without making the page look dirty */
+}
+
+/* ── 8. Section layout utilities ─────────────────────────────────────────────
+   Applied to every <section> element via the `section-padding` class.
+   @apply lets us use Tailwind utilities inside a reusable CSS class — avoids
+   repeating the same px-6 py-24 md:px-16 lg:px-32 on every section in JSX.    */
+.section-padding {
+  @apply px-6 py-24 md:px-16 lg:px-32; /* horizontal padding grows with screen width; vertical padding stays fixed */
+}
+
+.section-title {
+  font-family:    'JetBrains Mono', monospace;
+  font-size:      clamp(2rem, 5vw, 3.5rem); /* fluid: 2rem min, scales with viewport, 3.5rem max */
+  font-weight:    500;
+  color:          var(--ink);
+  margin-bottom:  0.5rem;
+  letter-spacing: -0.02em;                  /* slight negative tracking tightens large display headings */
+  line-height:    1.1;                      /* tight line-height for headlines — prevents excessive height */
+}
+
+.section-subtitle {
+  font-family:    'JetBrains Mono', monospace; /* monospace sub-label contrasts with Syne heading above it */
+  font-size:      0.75rem;
+  color:          var(--muted);
+  margin-bottom:  3rem;                        /* large gap between subtitle and content below */
+  letter-spacing: 0.15em;                      /* wide tracking on small mono text improves legibility */
+  text-transform: uppercase;
+}
+
+/* ── 9. Card component ───────────────────────────────────────────────────────
+   .card is applied to every info card across the portfolio (education, awards,
+   projects, skills, etc.). Consistent background, border, radius, shadow, and
+   hover animation unify the visual language of the page.                       */
+.card {
+  background:    var(--card);                    /* slightly off-white in light, dark grey in dark mode */
+  border:        1px solid rgba(128,128,128,0.15); /* very faint grey border defines card edges */
+  border-radius: 16px;                           /* rounded corners — friendly, modern feel */
+  box-shadow:    0 2px 20px rgba(0,0,0,0.06);   /* subtle default shadow for depth */
+  transition:    box-shadow 0.3s ease, transform 0.3s ease, background 0.3s ease; /* smooth hover animation */
+}
+
+/* Card hover state: lift up 2px and deepen shadow for a physical "raised" feel */
+.card:hover {
+  box-shadow: 0 8px 40px rgba(0,0,0,0.12); /* much stronger shadow on hover — card appears closer to the viewer */
+  transform:  translateY(-2px);             /* lift 2px up the page */
+}
+
+/* Dark mode card: darker border (white at 8% opacity) and stronger shadow (black is darker on dark bg) */
+html.dark .card {
+  border-color: rgba(255,255,255,0.08);
+  box-shadow:   0 2px 20px rgba(0,0,0,0.4);
+}
+
+html.dark .card:hover {
+  box-shadow:   0 8px 40px rgba(0,0,0,0.6);  /* even deeper shadow in dark mode — dark bg absorbs light differently */
+  border-color: rgba(255,255,255,0.13);       /* slightly more visible border on hover to define the edge */
+}
+
+/* ── 10. Accent line decoration ──────────────────────────────────────────────
+   A short 40×3px orange bar placed at the top of each section's header block.
+   Used in every section component as <div className="accent-line" />.
+   Acts as a visual anchor and colour callback that ties sections to the brand. */
+.accent-line {
+  display:       inline-block;
+  width:         40px;     /* short enough to be decorative, not dominant */
+  height:        3px;
+  background:    var(--accent); /* orange — matches nav active indicator and CTA buttons */
+  border-radius: 2px;
+  margin-bottom: 1rem;     /* gap between the bar and the subtitle text below it */
+}
+
+/* ── 11. Skill level badge classes ───────────────────────────────────────────
+   Defined here as CSS classes but applied inline via LEVEL_STYLE in Skills.jsx.
+   Kept here for reference and as a fallback — colour values must match LEVEL_STYLE. */
+.badge-advanced {
+  color:      #4ade80;                         /* green-400 */
+  background: rgba(74,222,128,0.1);
+  border:     1px solid rgba(74,222,128,0.3);
+}
+.badge-proficient {
+  color:      #60a5fa;                         /* blue-400 */
+  background: rgba(96,165,250,0.1);
+  border:     1px solid rgba(96,165,250,0.3);
+}
+.badge-intermediate {
+  color:      #fbbf24;                         /* amber-400 */
+  background: rgba(251,191,36,0.1);
+  border:     1px solid rgba(251,191,36,0.3);
+}
