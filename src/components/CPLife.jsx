@@ -111,7 +111,7 @@ export default function CPLife() {
             emoji="⚡" platform="Codeforces" handle="@itz_tanvir"
             rating="1200+"           // max rating achieved on Codeforces
             ratingLabel="Max Rating"
-            ratingColor="#60a5fa"    // Tailwind blue-400 — Codeforces uses blue for their rating tiers
+            ratingColor="#039003f0"    // Tailwind blue-400 — Codeforces uses blue for their rating tiers
             delay={0.1}
           />
           <PlatformCard
