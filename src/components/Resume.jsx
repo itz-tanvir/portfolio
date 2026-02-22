@@ -56,7 +56,7 @@ export default function Resume() {
           {/* "Open PDF" button — solid accent background, opens PDF in new tab */}
           {/* flex-shrink-0 prevents the button from squishing when the text block is wide */}
           <a
-            href="public/image/Resume.pdf"   // path to the PDF file in the built output
+            href="image/Resume.pdf"   // path to the PDF file in the built output
             target="_blank"            // open in a new browser tab — visitor doesn't lose their place
             rel="noopener noreferrer"  // security: block new tab from accessing window.opener
             className="flex items-center gap-2 font-semibold px-6 py-3 rounded-xl transition-all duration-200 flex-shrink-0 shadow-md"

@@ -88,7 +88,7 @@ export default function About() {
 
               {/* Actual profile photo — sits on top of the decorative frame via `relative` */}
               <img
-                src="public/image/my_image3.jpeg"
+                src="image/my_image3.jpeg"
                 alt="Tanvir's profile photo"
                 className="relative w-full h-full object-cover rounded-2xl shadow-2xl" // rounded corners, deep shadow for depth
               />
