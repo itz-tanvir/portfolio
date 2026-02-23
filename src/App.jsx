@@ -40,7 +40,9 @@ function Portfolio() {
   const [activeSection, setActiveSection] = useState('about')
 
   // darkMode: boolean — true means html.dark class is active, CSS vars flip to dark palette
-  const [darkMode, setDarkMode] = useState(false)
+  // ✏️ Changed default from `false` (light) → `true` (dark) so the site opens in dark mode.
+  // Users can still toggle to light mode via the Navbar sun/moon button as before.
+  const [darkMode, setDarkMode] = useState(true)
 
   // ── Dark mode effect ──────────────────────────────────────────────────────
   // Runs every time darkMode changes.
